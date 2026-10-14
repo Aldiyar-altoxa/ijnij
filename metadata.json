@@ -1,0 +1,8 @@
+{
+  "name": "Remix Remix Remix Ventorme — Career Trajectory Exploration Platform",
+  "description": "Ventorme helps you discover career paths aligned with your genuine interests, natural strengths, and passions. Stop guessing your future — start exploring it.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
