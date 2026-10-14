@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   ArrowRight, 
   CheckCircle2, 
@@ -23,6 +23,13 @@ export const MiniQuiz: React.FC = () => {
     track: ''
   });
   const [isCalculating, setIsCalculating] = useState<boolean>(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
 
   const gradeOptions = [
     { id: '8-9', label: '8–9 класс', sub: 'Ранний старт и выбор профиля' },
@@ -59,13 +66,16 @@ export const MiniQuiz: React.FC = () => {
   const handleSelectTrack = (val: string) => {
     setAnswers(prev => ({ ...prev, track: val }));
     setIsCalculating(true);
-    setTimeout(() => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => {
       setIsCalculating(false);
       setStep(4);
     }, 700);
   };
 
   const resetQuiz = () => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    setIsCalculating(false);
     setAnswers({ grade: '', destination: '', track: '' });
     setStep(1);
   };

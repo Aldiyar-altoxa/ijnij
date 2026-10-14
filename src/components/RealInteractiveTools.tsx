@@ -49,6 +49,13 @@ export const RealInteractiveTools: React.FC = () => {
   const [inputQuestion, setInputQuestion] = useState<string>('');
   const [isTyping, setIsTyping] = useState<boolean>(false);
   const chatBottomRef = useRef<HTMLDivElement>(null);
+  const chatTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (chatTimerRef.current) clearTimeout(chatTimerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     if (activeTab === 'venti') {
@@ -71,14 +78,15 @@ export const RealInteractiveTools: React.FC = () => {
 
   const handleSendQuestion = (textToSend?: string) => {
     const q = textToSend || inputQuestion;
-    if (!q.trim()) return;
+    if (!q.trim() || isTyping) return;
 
     const newMsg = { sender: 'user' as const, text: q, time: 'Сейчас' };
     setChatMessages(prev => [...prev, newMsg]);
     setInputQuestion('');
     setIsTyping(true);
 
-    setTimeout(() => {
+    if (chatTimerRef.current) clearTimeout(chatTimerRef.current);
+    chatTimerRef.current = setTimeout(() => {
       // Find suitable reply or generate smart context response
       let reply = 'Отличный вопрос! На основе твоего профиля я сформировал персональную рекомендацию с точными датами подачи и перечнем предметов. Зарегистрируйся в Ventorme, чтобы закрепить за собой персонального куратора и отслеживать подготовку!';
       
@@ -315,14 +323,17 @@ export const RealInteractiveTools: React.FC = () => {
 
                     <div className="space-y-2.5">
                       {REAL_UNIVERSITIES_SAMPLE.map((uni) => {
-                        const scoreDiff = effectiveScore - uni.minGrantScore2024;
+                        const uniScoreDiff = effectiveScore - uni.minGrantScore2024;
                         let statusText = 'Высокий шанс';
                         let statusColor = 'text-[#D4FF00] bg-[#D4FF00]/10 border-[#D4FF00]/30';
                         
-                        if (scoreDiff < -10) {
-                          statusText = `Нужно +${Math.abs(scoreDiff)} б.`;
+                        if (uniScoreDiff >= 10) {
+                          statusText = 'Уверенный проход (95%+)';
+                          statusColor = 'text-emerald-400 bg-emerald-400/10 border-emerald-400/30';
+                        } else if (uniScoreDiff < -10) {
+                          statusText = `Нужно +${Math.abs(uniScoreDiff)} б.`;
                           statusColor = 'text-rose-400 bg-rose-400/10 border-rose-400/20';
-                        } else if (scoreDiff < 0) {
+                        } else if (uniScoreDiff < 0) {
                           statusText = 'Пограничный балл';
                           statusColor = 'text-amber-400 bg-amber-400/10 border-amber-400/20';
                         }
@@ -467,15 +478,17 @@ export const RealInteractiveTools: React.FC = () => {
                 <input
                   type="text"
                   value={inputQuestion}
+                  disabled={isTyping}
                   onChange={(e) => setInputQuestion(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSendQuestion()}
-                  placeholder="Спроси Venti о грантах, вузах, ЕНТ или SAT..."
-                  className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#D4FF00]"
+                  placeholder={isTyping ? "Venti печатает ответ..." : "Спроси Venti о грантах, вузах, ЕНТ или SAT..."}
+                  className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#D4FF00] disabled:opacity-60"
                 />
                 <button
                   onClick={() => handleSendQuestion()}
                   type="button"
-                  className="px-5 py-3 rounded-xl bg-[#D4FF00] text-black font-bold text-xs hover:bg-[#b8e600] transition-colors cursor-pointer shrink-0 flex items-center gap-1.5"
+                  disabled={isTyping || !inputQuestion.trim()}
+                  className="px-5 py-3 rounded-xl bg-[#D4FF00] text-black font-bold text-xs hover:bg-[#b8e600] transition-colors cursor-pointer shrink-0 flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <span>Спросить</span>
                   <Send className="w-3.5 h-3.5" />

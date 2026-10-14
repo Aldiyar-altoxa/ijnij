@@ -118,8 +118,6 @@ export const HeroTrajectoryGraph: React.FC = () => {
                         path={pathD}
                         dur="3.2s"
                         repeatCount="indefinite"
-                        keyPoints="0;1"
-                        keyTimes="0;1"
                       />
                     </circle>
                   )}
